@@ -12,4 +12,9 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+// In src/firebase.js, add this right after initialization:
+console.log("Firebase initialized with config:", {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+});
 export const db = getFirestore(app);

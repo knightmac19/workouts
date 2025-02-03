@@ -19,9 +19,8 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/jiujitsu" element={<JiuJitsu />} />
-            <Route path="/workout/:workoutId" element={<ActiveWorkout />} />
             <Route
-              path="/workout/new/:templateId"
+              path="/workoutTemplates/:templateId"
               element={<ActiveWorkout />}
             />
           </Routes>

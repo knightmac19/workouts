@@ -14,8 +14,16 @@ export function ActiveWorkout() {
   useEffect(() => {
     const fetchWorkout = async () => {
       try {
+        console.log("Fetching workout with templateId:", templateId);
         const workoutRef = doc(db, "workoutTemplates", templateId);
+        console.log("Created document reference");
+
         const workoutDoc = await getDoc(workoutRef);
+        console.log(
+          "Fetched document:",
+          workoutDoc.exists(),
+          workoutDoc.data()
+        );
 
         if (workoutDoc.exists()) {
           setWorkout(workoutDoc.data());

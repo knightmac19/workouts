@@ -724,20 +724,35 @@ const workoutTemplates = {
 
 export const seedWorkouts = async () => {
   try {
-    const workoutsRef = collection(db, "workoutTemplates");
+    console.log("Starting to seed workouts...");
+    console.log("Database reference:", db);
 
-    // Add each workout template to Firestore
+    const workoutsRef = collection(db, "workoutTemplates");
+    console.log("Collection reference created");
+
     for (const [id, workout] of Object.entries(workoutTemplates)) {
-      await setDoc(doc(workoutsRef, id), {
-        ...workout,
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
+      console.log(`Attempting to seed workout: ${id}`);
+
+      try {
+        await setDoc(doc(workoutsRef, id), {
+          ...workout,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+        console.log(`Successfully seeded workout: ${id}`);
+      } catch (innerError) {
+        console.error(`Error seeding workout ${id}:`, innerError);
+        throw innerError;
+      }
     }
 
-    console.log("Successfully seeded workout templates");
+    console.log("Successfully seeded all workout templates");
   } catch (error) {
-    console.error("Error seeding workouts:", error);
+    console.error("Detailed error:", {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+    });
     throw error;
   }
 };
