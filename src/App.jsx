@@ -6,6 +6,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { History } from "./pages/History";
 import { Progress } from "./pages/Progress";
 import { JiuJitsu } from "./pages/JiuJitsu";
+import { ActiveWorkout } from "./pages/ActiveWorkout";
 
 function App() {
   return (
@@ -18,6 +19,11 @@ function App() {
             <Route path="/history" element={<History />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/jiujitsu" element={<JiuJitsu />} />
+            <Route path="/workout/:workoutId" element={<ActiveWorkout />} />
+            <Route
+              path="/workout/new/:templateId"
+              element={<ActiveWorkout />}
+            />
           </Routes>
         </div>
         <Navigation />
