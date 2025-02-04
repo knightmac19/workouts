@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import WorkoutSession from "../components/workouts/WorkoutSession";
+import { CardioSession } from "../components/workouts/CardioSession";
 
 export function ActiveWorkout() {
   const { templateId } = useParams();
@@ -44,7 +45,9 @@ export function ActiveWorkout() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading workout...</div>
+        <div className="text-lg text-gray-900 dark:text-white">
+          Loading workout...
+        </div>
       </div>
     );
   }
@@ -52,7 +55,7 @@ export function ActiveWorkout() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-red-600">{error}</div>
+        <div className="text-lg text-red-600 dark:text-red-400">{error}</div>
       </div>
     );
   }
@@ -60,9 +63,15 @@ export function ActiveWorkout() {
   return (
     <div className="container mx-auto px-4 py-6">
       {workout ? (
-        <WorkoutSession workout={workout} />
+        workout.type === "cardio" ? (
+          <CardioSession workout={workout} />
+        ) : (
+          <WorkoutSession workout={workout} />
+        )
       ) : (
-        <div className="text-center">No workout data available</div>
+        <div className="text-center text-gray-900 dark:text-white">
+          No workout data available
+        </div>
       )}
     </div>
   );

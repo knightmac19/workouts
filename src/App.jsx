@@ -1,5 +1,6 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "./contexts/themeContext";
 import { Header } from "./components/layout/Header";
 import { Navigation } from "./components/layout/Navigation";
 import { Dashboard } from "./pages/Dashboard";
@@ -10,24 +11,26 @@ import { ActiveWorkout } from "./pages/ActiveWorkout";
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/jiujitsu" element={<JiuJitsu />} />
-            <Route
-              path="/workoutTemplates/:templateId"
-              element={<ActiveWorkout />}
-            />
-          </Routes>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+          <Header />
+          <div className="container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="/jiujitsu" element={<JiuJitsu />} />
+              <Route
+                path="/workoutTemplates/:templateId"
+                element={<ActiveWorkout />}
+              />
+            </Routes>
+          </div>
+          <Navigation />
         </div>
-        <Navigation />
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 
