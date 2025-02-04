@@ -696,27 +696,28 @@ const workoutTemplates = {
     id: "tabata",
     type: "cardio",
     name: "Tabata",
+    description: "High-intensity interval training",
     exercises: [
       {
-        name: "Tabata",
+        name: "Tabata Intervals",
         sets: 8,
-        reps: "20 seconds",
-        rpe: 10,
+        workPeriod: 20,
         restPeriod: 10,
+        description: "20 seconds max effort, 10 seconds rest",
       },
     ],
   },
+
   zone2: {
-    id: "zone-2",
+    id: "zone2",
     type: "cardio",
     name: "Zone 2",
+    description: "Low-intensity steady state cardio",
     exercises: [
       {
-        name: "Stairmaster / Jog",
-        sets: 1,
-        reps: "40-60 minutes",
-        rpe: 6,
-        restPeriod: 0,
+        name: "Zone 2 Cardio",
+        duration: "40-60 minutes",
+        description: "Maintain steady state effort at conversational pace",
       },
     ],
   },

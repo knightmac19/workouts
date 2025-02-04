@@ -9,6 +9,13 @@ import { Progress } from "./pages/Progress";
 import { JiuJitsu } from "./pages/JiuJitsu";
 import { ActiveWorkout } from "./pages/ActiveWorkout";
 
+import { seedWorkouts } from "./utils/seedWorkouts";
+
+// Call this once to seed the data
+seedWorkouts()
+  .then(() => console.log("Successfully seeded workouts"))
+  .catch((error) => console.error("Error seeding workouts:", error));
+
 function App() {
   return (
     <ThemeProvider>

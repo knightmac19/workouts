@@ -10,6 +10,8 @@ export function CardioSession({ workout }) {
   const [notes, setNotes] = useState("");
   const [intensity, setIntensity] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
+  const [distance, setDistance] = useState("");
+  const [equipment, setEquipment] = useState("");
 
   const handleSaveWorkout = async () => {
     // TODO: Save to Firebase
@@ -22,6 +24,8 @@ export function CardioSession({ workout }) {
       notes: notes,
       completed: isCompleted,
       timestamp: new Date().toISOString(),
+      distance: distance,
+      equipment: equipment,
     };
 
     console.log("Saving cardio workout:", workoutData);
@@ -63,6 +67,46 @@ export function CardioSession({ workout }) {
               }}
             />
           </div>
+        )}
+
+        {workout.id === "zone2" && (
+          <>
+            {/* Equipment Selection */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Equipment
+              </label>
+              <select
+                value={equipment}
+                onChange={(e) => setEquipment(e.target.value)}
+                className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="">Select equipment...</option>
+                <option value="treadmill">Treadmill</option>
+                <option value="bike">Stationary Bike</option>
+                <option value="jogging">Jogging Outside</option>
+                <option value="rowing">Rowing Machine</option>
+                <option value="elliptical">Elliptical</option>
+                <option value="stairmaster">Stairmaster</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Distance Input */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+                Distance (miles)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={distance}
+                onChange={(e) => setDistance(e.target.value)}
+                className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                placeholder="Enter distance"
+              />
+            </div>
+          </>
         )}
 
         {/* Duration Input */}
