@@ -1,7 +1,7 @@
 // src/components/workouts/CardioSession.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Timer } from "../common/Timer";
+import { TabataTimer } from "../common/TabataTimer";
 import { Save, ArrowLeft, Clock } from "lucide-react";
 
 export function CardioSession({ workout }) {
@@ -55,7 +55,13 @@ export function CardioSession({ workout }) {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-4">
         {workout.id === "tabata" && (
           <div className="mb-4">
-            <Timer initialTime={480} /> {/* 8 minutes for Tabata */}
+            <TabataTimer
+              onComplete={() => {
+                setIsCompleted(true);
+                setDuration("4"); // 4 minutes total for Tabata
+                setIntensity("10"); // Maximum intensity
+              }}
+            />
           </div>
         )}
 
