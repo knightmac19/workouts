@@ -8,6 +8,7 @@ import { History } from "./pages/History";
 import { Progress } from "./pages/Progress";
 import { JiuJitsu } from "./pages/JiuJitsu";
 import { ActiveWorkout } from "./pages/ActiveWorkout";
+import { Toaster } from "react-hot-toast";
 
 import { seedWorkouts } from "./utils/seedWorkouts";
 
@@ -19,6 +20,7 @@ seedWorkouts()
 function App() {
   return (
     <ThemeProvider>
+      <Toaster position="top-right" />
       <Router>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
           <Header />
