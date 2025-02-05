@@ -37,8 +37,6 @@ export default function WorkoutSession({ workout }) {
   const handleSaveWorkout = async () => {
     try {
       setIsSaving(true);
-
-      // Validate workout data before saving
       const hasEmptySets = exerciseData.some((exercise) =>
         exercise.sets.some(
           (set) =>
@@ -49,39 +47,40 @@ export default function WorkoutSession({ workout }) {
 
       if (hasEmptySets) {
         toast.error("Please complete all set data before saving");
-        setIsSaving(false);
         return;
       }
 
-      // Prepare workout data for saving
       const workoutToSave = {
         templateId: workout.id,
         name: workout.name,
-        type: workout.type || "hypertrophy", // Add default
+        type: workout.type || "hypertrophy",
         completedAt: serverTimestamp(),
         exercises: exerciseData.map((exercise) => ({
           name: exercise.name,
           targetSets: exercise.sets.length,
-          targetReps: exercise.reps || 0,
-          targetRpe: exercise.rpe || 0,
+          targetReps: parseInt(exercise.reps) || 0,
+          targetRpe: parseInt(exercise.rpe) || 0,
           sets: exercise.sets.map((set) => ({
-            weight: Number(set.weight) || 0,
-            reps: Number(set.reps) || 0,
-            rpe: Number(set.rpe) || 0,
+            weight: parseInt(set.weight) || 0,
+            reps: parseInt(set.reps) || 0,
+            rpe: parseFloat(set.rpe) || 0,
             completed: Boolean(set.completed),
           })),
         })),
       };
 
-      // Save to Firebase
-      const workoutsRef = collection(db, "completedWorkouts");
-      await addDoc(workoutsRef, workoutToSave);
+      console.log("Saving workout:", workoutToSave);
+      const workoutRef = await addDoc(
+        collection(db, "completedWorkouts"),
+        workoutToSave
+      );
+      console.log("Saved workout with ID:", workoutRef.id);
 
       toast.success("Workout saved successfully!");
-      navigate("/");
+      navigate("/history");
     } catch (error) {
       console.error("Error saving workout:", error);
-      toast.error("Failed to save workout. Please try again.");
+      toast.error("Failed to save workout");
     } finally {
       setIsSaving(false);
     }
