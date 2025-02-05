@@ -57,21 +57,18 @@ export default function WorkoutSession({ workout }) {
       const workoutToSave = {
         templateId: workout.id,
         name: workout.name,
-        type: workout.type,
+        type: workout.type || "hypertrophy", // Add default
         completedAt: serverTimestamp(),
         exercises: exerciseData.map((exercise) => ({
           name: exercise.name,
-          targetSets:
-            workout.exercises.find((e) => e.name === exercise.name)?.sets || 0,
-          targetReps:
-            workout.exercises.find((e) => e.name === exercise.name)?.reps || 0,
-          targetRpe:
-            workout.exercises.find((e) => e.name === exercise.name)?.rpe || 0,
+          targetSets: exercise.sets.length,
+          targetReps: exercise.reps || 0,
+          targetRpe: exercise.rpe || 0,
           sets: exercise.sets.map((set) => ({
-            ...set,
-            weight: set.weight ? Number(set.weight) : 0,
-            reps: set.reps ? Number(set.reps) : 0,
-            rpe: set.rpe ? Number(set.rpe) : 0,
+            weight: Number(set.weight) || 0,
+            reps: Number(set.reps) || 0,
+            rpe: Number(set.rpe) || 0,
+            completed: Boolean(set.completed),
           })),
         })),
       };

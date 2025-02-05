@@ -28,9 +28,12 @@ function App() {
                     <Route path="/jiujitsu" element={<JiuJitsu />} />
                     <Route path="/history" element={<History />} />
                     <Route path="/progress" element={<Progress />} />
-                    <Route path="/workout/:id" element={<ActiveWorkout />} />
                     <Route
-                      path="/workoutTemplates/:id"
+                      path="/workoutTemplates/:templateId"
+                      element={<ActiveWorkout />}
+                    />
+                    <Route
+                      path="/workout/:workoutId"
                       element={<WorkoutDetails />}
                     />
                   </Routes>
