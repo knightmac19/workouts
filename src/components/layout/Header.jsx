@@ -1,62 +1,38 @@
-// src/components/layout/Header.jsx
-import { useLocation } from "react-router-dom";
-import { ThemeToggle } from "../common/ThemeToggle";
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { ThemeToggle } from "../Common/ThemeToggle";
+import { LogOut } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 
 export function Header() {
-  const location = useLocation();
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const { logout } = useAuth();
 
-  useEffect(() => {
-    // Update time every minute
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const getPageTitle = () => {
-    switch (location.pathname) {
-      case "/":
-        return "Dashboard";
-      case "/history":
-        return "History";
-      case "/progress":
-        return "Progress";
-      case "/jiujitsu":
-        return "Jiu Jitsu";
-      default:
-        return "Workout Tracker";
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Redirect will happen automatically due to AuthWrapper
+    } catch (error) {
+      console.error("Failed to log out:", error);
     }
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors">
-      <div className="container mx-auto px-4">
-        <div className="py-4 flex justify-between items-start relative">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {getPageTitle()}
+    <header className="bg-white dark:bg-gray-800 shadow w-full">
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-7xl px-4">
+          <div className="h-16 flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              Training Log
             </h1>
-            <div className="flex gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
-              <div>
-                {format(currentTime, "EEEE")}
-                <br />
-                {format(currentTime, "MMM d, yyyy")}
-              </div>
-              <div className="font-mono self-end">
-                {format(currentTime, "HH:mm")}
-              </div>
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              >
+                <LogOut className="h-5 w-5" />
+                <span className="ml-2">Sign Out</span>
+              </button>
             </div>
           </div>
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Workouts
-            </h1>
-          </div>
-          <ThemeToggle />
         </div>
       </div>
     </header>
