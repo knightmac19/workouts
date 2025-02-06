@@ -1,6 +1,8 @@
 // src/pages/Dashboard.jsx
 import { useNavigate } from "react-router-dom";
 import { Dumbbell, Brain, Activity, Clock, ChevronRight } from "lucide-react";
+import { WeeklySchedule } from "../components/dashboard/WeeklySchedule";
+import { TodayWorkouts } from "../components/dashboard/TodayWorkouts";
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -83,6 +85,12 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Today's Workouts Section */}
+      <TodayWorkouts />
+
+      {/* Weekly Schedule Section */}
+      <WeeklySchedule />
+
       {/* Cardio Section */}
       <section>
         <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">

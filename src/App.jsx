@@ -22,7 +22,7 @@ function App() {
             <AuthWrapper>
               <Header />
               <div className="flex-1 w-full flex justify-center">
-                <main className="w-full max-w-7xl px-4 py-8">
+                <main className="w-full max-w-7xl px-4 py-8 pb-24">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/jiujitsu" element={<JiuJitsu />} />
