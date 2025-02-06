@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  orderBy,
+  getDocs,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../firebase";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function History() {
@@ -11,6 +18,8 @@ export function History() {
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingWorkout, setDeletingWorkout] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const workoutTypes = [
     { value: "all", label: "All" },
@@ -22,32 +31,54 @@ export function History() {
     { value: "jiujitsu", label: "Jiu Jitsu" },
   ];
 
+  const fetchWorkouts = async () => {
+    try {
+      setLoading(true);
+      const workoutsRef = collection(db, "completedWorkouts");
+      const q = query(workoutsRef, orderBy("completedAt", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      const workoutData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        completedAt: doc.data().completedAt?.toDate() || new Date(),
+      }));
+
+      setWorkouts(workoutData);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching workouts:", err);
+      setError("Failed to load workout history");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchWorkouts = async () => {
-      try {
-        setLoading(true);
-        const workoutsRef = collection(db, "completedWorkouts");
-        const q = query(workoutsRef, orderBy("completedAt", "desc"));
-        const querySnapshot = await getDocs(q);
-
-        const workoutData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          completedAt: doc.data().completedAt?.toDate() || new Date(),
-        }));
-
-        setWorkouts(workoutData);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching workouts:", err);
-        setError("Failed to load workout history");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWorkouts();
   }, []);
+
+  const handleDeleteClick = (workout) => {
+    setDeletingWorkout(workout);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingWorkout) return;
+
+    try {
+      await deleteDoc(doc(db, "completedWorkouts", deletingWorkout.id));
+
+      // Remove the workout from local state
+      setWorkouts(workouts.filter((w) => w.id !== deletingWorkout.id));
+
+      setShowDeleteConfirm(false);
+      setDeletingWorkout(null);
+    } catch (err) {
+      console.error("Error deleting workout:", err);
+      setError("Failed to delete workout");
+    }
+  };
 
   const filteredWorkouts =
     selectedType === "all"
@@ -65,7 +96,10 @@ export function History() {
   if (error) {
     return (
       <div className="text-center text-red-600 dark:text-red-400 p-4">
-        {error}
+        <div className="flex items-center justify-center gap-2">
+          <AlertCircle className="h-5 w-5" />
+          <span>{error}</span>
+        </div>
       </div>
     );
   }
@@ -130,16 +164,55 @@ export function History() {
                     </div>
                   ))}
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end items-center gap-4">
                 <button
                   onClick={() => navigate(`/workout/${workout.id}`)}
                   className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
                 >
                   View Details
                 </button>
+                <button
+                  onClick={() => handleDeleteClick(workout)}
+                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                  aria-label="Delete workout"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Delete Workout?
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete this workout? This action cannot
+              be undone.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeletingWorkout(null);
+                }}
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
