@@ -1,8 +1,7 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import "firebase/auth"; // Add this import
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -16,12 +15,25 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-console.log("Firebase initialized with config:", {
-  projectId: firebaseConfig.projectId,
-  authDomain: firebaseConfig.authDomain,
-});
+// Initialize Auth
+const auth = getAuth(app);
 
-// Initialize Authentication and Firestore
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export default app;
+// Initialize Firestore with persistence
+const db = getFirestore(app);
+
+// Only enable persistence if we're in a browser environment
+if (typeof window !== "undefined") {
+  enableIndexedDbPersistence(db, {
+    synchronizeTabs: true,
+  }).catch((err) => {
+    if (err.code === "failed-precondition") {
+      console.warn(
+        "Multiple tabs open, persistence can only be enabled in one tab at a time"
+      );
+    } else if (err.code === "unimplemented") {
+      console.warn("The current browser doesn't support persistence");
+    }
+  });
+}
+
+export { app, auth, db };

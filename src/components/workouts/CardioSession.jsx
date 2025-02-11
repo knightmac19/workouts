@@ -1,35 +1,135 @@
 // src/components/workouts/CardioSession.jsx
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TabataTimer } from "../common/TabataTimer";
 import { Save, ArrowLeft, Clock } from "lucide-react";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../../firebase";
+import { toast } from "react-hot-toast";
+import {
+  usePersistState,
+  clearPersistedState,
+} from "../../hooks/usePersistState";
 
 export function CardioSession({ workout }) {
   const navigate = useNavigate();
-  const [duration, setDuration] = useState("");
-  const [notes, setNotes] = useState("");
-  const [intensity, setIntensity] = useState("");
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [distance, setDistance] = useState("");
-  const [equipment, setEquipment] = useState("");
+  const [duration, setDuration] = usePersistState(
+    `cardio_${workout.id}_duration`,
+    ""
+  );
+  const [notes, setNotes] = usePersistState(`cardio_${workout.id}_notes`, "");
+  const [intensity, setIntensity] = usePersistState(
+    `cardio_${workout.id}_intensity`,
+    ""
+  );
+  const [isCompleted, setIsCompleted] = usePersistState(
+    `cardio_${workout.id}_completed`,
+    false
+  );
+  const [distance, setDistance] = usePersistState(
+    `cardio_${workout.id}_distance`,
+    ""
+  );
+  const [equipment, setEquipment] = usePersistState(
+    `cardio_${workout.id}_equipment`,
+    ""
+  );
 
-  const handleSaveWorkout = async () => {
-    // TODO: Save to Firebase
-    const workoutData = {
-      type: "cardio",
-      workoutId: workout.id,
-      name: workout.name,
-      duration: duration,
-      intensity: intensity,
-      notes: notes,
-      completed: isCompleted,
-      timestamp: new Date().toISOString(),
-      distance: distance,
-      equipment: equipment,
+  // Handle cleanup when navigating away
+  useEffect(() => {
+    const cleanup = () => {
+      Promise.all([
+        clearPersistedState(`cardio_${workout.id}_duration`),
+        clearPersistedState(`cardio_${workout.id}_notes`),
+        clearPersistedState(`cardio_${workout.id}_intensity`),
+        clearPersistedState(`cardio_${workout.id}_completed`),
+        clearPersistedState(`cardio_${workout.id}_distance`),
+        clearPersistedState(`cardio_${workout.id}_equipment`),
+      ]).catch((error) => {
+        console.error("Error clearing persisted state:", error);
+      });
     };
 
-    console.log("Saving cardio workout:", workoutData);
+    // Add event listener for beforeunload
+    window.addEventListener("beforeunload", cleanup);
+
+    return () => {
+      window.removeEventListener("beforeunload", cleanup);
+      cleanup();
+    };
+  }, [workout.id]);
+
+  const handleNavigateBack = async () => {
+    // Clear persisted state before navigating
+    await Promise.all([
+      clearPersistedState(`cardio_${workout.id}_duration`),
+      clearPersistedState(`cardio_${workout.id}_notes`),
+      clearPersistedState(`cardio_${workout.id}_intensity`),
+      clearPersistedState(`cardio_${workout.id}_completed`),
+      clearPersistedState(`cardio_${workout.id}_distance`),
+      clearPersistedState(`cardio_${workout.id}_equipment`),
+    ]);
+
     navigate("/");
+  };
+
+  const handleSaveWorkout = async () => {
+    try {
+      // Basic validation
+      if (!duration) {
+        toast.error("Please enter a duration");
+        return;
+      }
+      if (!intensity) {
+        toast.error("Please enter an intensity");
+        return;
+      }
+      if (workout.id === "zone2" && !distance) {
+        toast.error("Please enter a distance");
+        return;
+      }
+      if (workout.id === "zone2" && !equipment) {
+        toast.error("Please select equipment");
+        return;
+      }
+
+      const workoutData = {
+        type: "cardio",
+        templateId: workout.id,
+        name: workout.name,
+        duration: parseInt(duration),
+        intensity: parseInt(intensity),
+        notes: notes.trim(),
+        completed: isCompleted,
+        completedAt: serverTimestamp(),
+        distance: distance ? parseFloat(distance) : null,
+        equipment: equipment || null,
+      };
+
+      // Save to Firebase
+      const workoutRef = await addDoc(
+        collection(db, "completedWorkouts"),
+        workoutData
+      );
+
+      console.log("Saved workout with ID:", workoutRef.id);
+      toast.success("Workout saved successfully!");
+
+      // Clear persisted state after successful save
+      await Promise.all([
+        clearPersistedState(`cardio_${workout.id}_duration`),
+        clearPersistedState(`cardio_${workout.id}_notes`),
+        clearPersistedState(`cardio_${workout.id}_intensity`),
+        clearPersistedState(`cardio_${workout.id}_completed`),
+        clearPersistedState(`cardio_${workout.id}_distance`),
+        clearPersistedState(`cardio_${workout.id}_equipment`),
+      ]);
+
+      navigate("/history");
+    } catch (error) {
+      console.error("Error saving workout:", error);
+      toast.error("Failed to save workout");
+    }
   };
 
   return (
@@ -37,7 +137,7 @@ export function CardioSession({ workout }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => navigate("/")}
+          onClick={handleNavigateBack}
           className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
         >
           <ArrowLeft className="w-5 h-5 mr-1" />

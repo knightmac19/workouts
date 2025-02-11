@@ -1,3 +1,4 @@
+// src/components/auth/AuthWrapper.jsx
 import React, { useState } from "react";
 import { Login, SignUp } from "./AuthForms";
 import { useAuth } from "../../contexts/AuthContext";

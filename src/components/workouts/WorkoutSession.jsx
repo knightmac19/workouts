@@ -1,17 +1,35 @@
-import React, { useState } from "react";
+// src/components/workouts/WorkoutSession.jsx
+import React, { useEffect, useCallback } from "react";
 import { Timer } from "../common/Timer";
 import { ChevronDown, ChevronUp, Info, Save, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { toast } from "react-hot-toast";
+import {
+  usePersistState,
+  clearPersistedState,
+} from "../../hooks/usePersistState";
 
 export default function WorkoutSession({ workout }) {
   const navigate = useNavigate();
-  const [expandedExercise, setExpandedExercise] = useState(null);
-  const [showInfo, setShowInfo] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [exerciseData, setExerciseData] = useState(
+
+  // Initialize all state with usePersistState
+  const [expandedExercise, setExpandedExercise, expandedLoading] =
+    usePersistState(`workout_${workout.id}_expanded`, null);
+
+  const [showInfo, setShowInfo, infoLoading] = usePersistState(
+    `workout_${workout.id}_showInfo`,
+    null
+  );
+
+  const [isSaving, setIsSaving, savingLoading] = usePersistState(
+    `workout_${workout.id}_saving`,
+    false
+  );
+
+  const [exerciseData, setExerciseData, dataLoading] = usePersistState(
+    `workout_${workout.id}_data`,
     workout.exercises.map((exercise) => ({
       ...exercise,
       sets: Array.from({ length: exercise.sets }, () => ({
@@ -23,6 +41,31 @@ export default function WorkoutSession({ workout }) {
     }))
   );
 
+  const isLoading =
+    expandedLoading || infoLoading || savingLoading || dataLoading;
+
+  const cleanupState = useCallback(async () => {
+    if (!isSaving) {
+      try {
+        await Promise.all([
+          clearPersistedState(`workout_${workout.id}_data`),
+          clearPersistedState(`workout_${workout.id}_expanded`),
+          clearPersistedState(`workout_${workout.id}_showInfo`),
+          clearPersistedState(`workout_${workout.id}_saving`),
+        ]);
+      } catch (error) {
+        console.error("Error clearing persisted state:", error);
+      }
+    }
+  }, [workout.id, isSaving]);
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      cleanupState();
+    };
+  }, [cleanupState]);
+
   const handleSetUpdate = (exerciseIndex, setIndex, field, value) => {
     setExerciseData((prevData) => {
       const newData = [...prevData];
@@ -32,6 +75,11 @@ export default function WorkoutSession({ workout }) {
       };
       return newData;
     });
+  };
+
+  const handleNavigateBack = async () => {
+    await cleanupState();
+    navigate("/");
   };
 
   const handleSaveWorkout = async () => {
@@ -47,6 +95,7 @@ export default function WorkoutSession({ workout }) {
 
       if (hasEmptySets) {
         toast.error("Please complete all set data before saving");
+        setIsSaving(false);
         return;
       }
 
@@ -69,29 +118,35 @@ export default function WorkoutSession({ workout }) {
         })),
       };
 
-      console.log("Saving workout:", workoutToSave);
       const workoutRef = await addDoc(
         collection(db, "completedWorkouts"),
         workoutToSave
       );
-      console.log("Saved workout with ID:", workoutRef.id);
 
       toast.success("Workout saved successfully!");
+      await cleanupState();
       navigate("/history");
     } catch (error) {
       console.error("Error saving workout:", error);
       toast.error("Failed to save workout");
-    } finally {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 pb-16">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => navigate("/")}
+          onClick={handleNavigateBack}
           className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
         >
           <ArrowLeft className="w-5 h-5 mr-1" />

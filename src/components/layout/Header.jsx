@@ -1,4 +1,5 @@
-import { ThemeToggle } from "../Common/ThemeToggle";
+// src/components/layout/Header.jsx
+import { ThemeToggle } from "../common/ThemeToggle";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
